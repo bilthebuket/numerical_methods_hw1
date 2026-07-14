@@ -1,7 +1,7 @@
 # Required
 - gcc compiler
 # Compile
-- bash compile.sh
+- `bash compile.sh`
 # Problems
 1. Doesn't have any associated code
 1. ./hw1 2 \<system to solve (A augmented with b)\> \<solution\>
