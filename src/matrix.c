@@ -608,7 +608,12 @@ void matrix_add_row(Matrix* m, int to_apply, int apply_to, double multiplier, bo
 
 	for (int i = 0; i < m->cols; i++)
 	{
-		m->vals[apply_to * m->cols + i] += m->vals[to_apply * m->cols + i] * multiplier;
+		double multiplied = m->vals[to_apply * m->cols + i] * multiplier;
+		if (truncate)
+		{
+			truncate_num(&multiplied);
+		}
+		m->vals[apply_to * m->cols + i] += multiplied;
 		if (truncate)
 		{
 			truncate_num(&m->vals[apply_to * m->cols + i]);
@@ -633,6 +638,23 @@ void matrix_mult_row(Matrix* m, int row, double val, bool truncate)
 	}
 }
 
+void matrix_divide_row(Matrix*m, int row, double val, bool truncate)
+{
+	if (m == NULL || row < 0 || row >= m->rows)
+	{
+		return;
+	}
+
+	for (int i = 0; i < m->cols; i++)
+	{
+		m->vals[row * m->cols + i] /= val;
+		if (truncate)
+		{
+			truncate_num(&m->vals[row * m->cols + i]);
+		}
+	}
+}
+
 void matrix_reduce_diagnol(Matrix* m, bool truncate)
 {
 	if (m == NULL)
@@ -648,11 +670,11 @@ void matrix_reduce_diagnol(Matrix* m, bool truncate)
 
 	for (int i = 0; i < min; i++)
 	{
-		matrix_mult_row(m, i, 1 / m->vals[i * m->cols + i], truncate);
+		matrix_divide_row(m, i, m->vals[i * m->cols + i], truncate);
 	}
 }
 
-void matrix_reduce_upper(Matrix* m, bool truncate)
+void matrix_reduce_upper(Matrix* m, bool truncate, bool reduce_diagnol)
 {
 	if (m == NULL)
 	{
@@ -664,11 +686,19 @@ void matrix_reduce_upper(Matrix* m, bool truncate)
 	{
 		min = m->rows;
 	}
-	for (int i = min - 1; i > 0; i--)
+	for (int i = min - 1; i >= 0; i--)
 	{
+		if (reduce_diagnol)
+		{
+			matrix_divide_row(m, i, m->vals[i * m->cols + i], truncate);
+		}
 		for (int j = i - 1; j >= 0; j--)
 		{
 			double factor = (m->vals[j * m->cols + i] / m->vals[i * m->cols + i]) * -1;
+			if (truncate)
+			{
+				truncate_num(&factor);
+			}
 			matrix_add_row(m, i, j, factor, truncate);
 		}
 	}

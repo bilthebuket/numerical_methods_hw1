@@ -43,11 +43,13 @@ void matrix_swap_rows(Matrix* m, int* swaps);
 void matrix_add_row(Matrix* m, int to_apply, int apply_to, double multiplier, bool truncate);
 // multiplies every value in the row by val
 void matrix_mult_row(Matrix* m, int row, double val, bool truncate);
+// same as matrix_mult_row but for dividing
+void matrix_divide_row(Matrix* m, int row, double val, bool truncate);
 
 // assumes m is a diagnol matrix that just needs to be reduced to the identity matrix by dividing each row by the value on the diagnol
 void matrix_reduce_diagnol(Matrix* m, bool truncate);
 // assumes below the diagnol is already zeros, is essentially back substitution
-void matrix_reduce_upper(Matrix* m, bool truncate);
+void matrix_reduce_upper(Matrix* m, bool truncate, bool reduce_diagnol);
 
 // both of these return int arrays which have the new ordering of the rows
 int* matrix_reduce_lower(Matrix* m, bool partial_pivot, bool truncate);

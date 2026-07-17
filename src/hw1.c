@@ -29,7 +29,7 @@ Matrix* solve_system(Matrix* m, bool partial_pivot, bool truncate)
 	matrix_reduce_diagnol(lower, truncate);
 	b = matrix_unaugment(lower, lower->cols - 1);
 	matrix_augment(upper, b);
-	matrix_reduce_upper(upper, truncate);
+	matrix_reduce_upper(upper, truncate, false);
 	matrix_reduce_diagnol(upper, truncate);
 	b = matrix_unaugment(upper, upper->cols - 1);
 
@@ -148,8 +148,7 @@ static int problem_four(int argc, char* argv[])
 	{
 		free(arr);
 	}
-	matrix_reduce_upper(no_swap, true);
-	matrix_reduce_diagnol(no_swap, true);
+	matrix_reduce_upper(no_swap, true, true);
 	Matrix* b = matrix_unaugment(no_swap, no_swap->cols - 1);
 	printf("truncated, no pivot:\n");
 	matrix_print(b, stdout);
@@ -165,8 +164,7 @@ static int problem_four(int argc, char* argv[])
 
 	Matrix* swap = matrix_duplicate(m);
 	arr = matrix_reduce_lower(swap, true, true);
-	matrix_reduce_upper(swap, true);
-	matrix_reduce_diagnol(swap, true);
+	matrix_reduce_upper(swap, true, true);
 	b = matrix_unaugment(swap, swap->cols - 1);
 	if (arr != NULL)
 	{
@@ -234,7 +232,7 @@ static int problem_five(int argc, char* argv[])
 
 	matrix_augment(lower, c);
 	int* arr = matrix_reduce_lower(lower, true, false);
-	matrix_reduce_upper(lower, false);
+	matrix_reduce_upper(lower, false, false);
 	matrix_reduce_diagnol(lower, false);
 	Matrix* z = matrix_unaugment(lower, lower->cols - 1);
 	if (arr != NULL)
@@ -246,7 +244,7 @@ static int problem_five(int argc, char* argv[])
 
 	matrix_augment(transpose, z);
 	arr = matrix_reduce_lower(transpose, true, false);
-	matrix_reduce_upper(transpose, false);
+	matrix_reduce_upper(transpose, false, false);
 	matrix_reduce_diagnol(transpose, false);
 	Matrix* sol = matrix_unaugment(transpose, transpose->cols - 1);
 	if (arr != NULL)
