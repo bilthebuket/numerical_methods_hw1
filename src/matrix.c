@@ -4,6 +4,138 @@
 #include <pthread.h>
 #include "matrix.h"
 
+IterationHistory* ih_create(int maxit)
+{
+	IterationHistory* ih = malloc(sizeof(IterationHistory));
+	if (ih == NULL)
+	{
+		return NULL;
+	}
+
+	char* arrays = malloc(sizeof(double) * maxit * 2 + sizeof(Matrix) * maxit);
+	if (arrays == NULL)
+	{
+		free(ih);
+		return NULL;
+	}
+	ih->xhist = (Matrix*) &arrays[0];
+	ih->rhist = (double*) &arrays[sizeof(Matrix) * maxit];
+	ih->diffhist = (double*) &arrays[sizeof(Matrix) * maxit + sizeof(double) * maxit];
+	ih->iterations_executed = 0;
+	return ih;
+}
+
+void ih_free(IterationHistory* ih)
+{
+	if (ih == NULL)
+	{
+		return;
+	}
+
+	for (int i = 0; i < ih->iterations_executed; i++)
+	{
+		free(ih->xhist[i].vals);
+	}
+	free(ih->xhist);
+	free(ih);
+}
+
+IterationHistory* stationary_solver(Matrix* m, double tolerance, int maxit, int method, double omega)
+{
+	if (m == NULL || maxit <= 0 || method < 0 || method > MAX_VALID_METHOD)
+	{
+		return NULL;
+	}
+
+	IterationHistory* r = ih_create(maxit);
+	if (r == NULL)
+	{
+		return NULL;
+	}
+
+	char buf[m->rows * 2];
+	for (int i = 0; i < 2 * (m->rows - 1); i += 2)
+	{
+		buf[i] = '0';
+		buf[i + 1] = ';';
+	}
+	buf[2 * m->rows - 2] = '0';
+	buf[2 * m->rows - 1] = '\0';
+	Matrix* xold = matrix_create(buf);
+	Matrix* b = matrix_unaugment(m, m->cols - 1);
+
+	matrix_copy(&(r->xhist[0]), xold);
+	r->rhist[0] = matrix_infinity_norm(b);
+	r->diffhist[0] = (double) NAN;
+	r->iterations_executed++;
+
+	for (int i = 0; i < maxit - 1; i++)
+	{
+		Matrix* xnew = matrix_create(buf);
+		for (int j = 0; j < m->rows; j++)
+		{
+			double sum = 0.0;
+			for (int k = j + 1; k < m->cols; k++)
+			{
+				sum += m->vals[j * m->cols + k] * xold->vals[k];
+			}
+			if (method == JACOBI)
+			{
+				for (int k = 0; k < j; k++)
+				{
+					sum += m->vals[j * m->cols + k] * xold->vals[k];
+				}
+			}
+			else
+			{
+				for (int k = 0; k < j; k++)
+				{
+					sum += m->vals[j * m->cols + k] * xnew->vals[k];
+				}
+			}
+
+			sum = (b->vals[j] - sum);
+			sum /= m->vals[j * m->cols + j];
+			sum *= omega;
+			sum += (1 - omega) * xold->vals[j];
+			xnew->vals[j] = sum;
+		}
+
+		Matrix* mult = matrix_mult_matrix(m, xnew);
+		// this is backwards but we are only using it to compute the infinity norm which takes the absolute value anyways
+		// also this means that b does not get mutated and can be reused
+		matrix_sub_matrix(mult, b);
+		double residual_norm = matrix_infinity_norm(mult);
+		r->rhist[i + 1] = residual_norm;
+		matrix_free(mult);
+
+		Matrix* xnew_dupe = matrix_duplicate(xnew);
+		matrix_sub_matrix(xnew_dupe, xold);
+		double numerator = matrix_infinity_norm(xnew_dupe);
+		matrix_free(xnew_dupe);
+		double denominator = matrix_infinity_norm(xold);
+		if (denominator < 1.0)
+		{
+			denominator = 1.0;
+		}
+		r->diffhist[i + 1] = numerator / denominator;
+
+		matrix_copy(&(r->xhist[i + 1]), xnew);
+		free(xold);
+		xold = xnew;
+		r->iterations_executed++;
+
+		if (r->diffhist[i + 1] < tolerance)
+		{
+			break;
+		}
+	}
+
+	free(xold);
+	matrix_augment(m, b);
+	return r;
+}
+
 #define NUM_SIG_DIGITS 3
 
 void truncate_num(double* d)
@@ -138,6 +270,18 @@ void matrix_free(Matrix* m)
 		free(m->vals);
 		free(m);
 	}
+}
+
+void matrix_copy(Matrix* copy_to, Matrix* copy_from)
+{
+	if (copy_to == NULL || copy_from == NULL)
+	{
+		return;
+	}
+
+	copy_to->vals = copy_from->vals;
+	copy_to->rows = copy_from->rows;
+	copy_to->cols = copy_from->cols;
 }
 
 void matrix_add_matrix(Matrix* add_to, Matrix* add_from)
@@ -1151,6 +1295,33 @@ double matrix_get_magnitude(Matrix* m)
 	}
 
 	return pow(r, .5);
+}
+
+double matrix_infinity_norm(Matrix* m)
+{
+	if (m == NULL)
+	{
+		return (double) NAN;
+	}
+
+	double r = 0.0;
+
+	for (int i = 0; i < m->rows; i++)
+	{
+		double this_row = 0.0;
+
+		for (int j = 0; j < m->cols; j++)
+		{
+			this_row += fabs(m->vals[i * m->cols + j]);
+		}
+
+		if (this_row > r)
+		{
+			r = this_row;
+		}
+	}
+
+	return r;
 }
 
 #define EQUALITY_THRESHOLD .01

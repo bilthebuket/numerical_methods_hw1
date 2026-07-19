@@ -11,11 +11,30 @@ typedef struct Matrix
 	int cols;
 } Matrix;
 
+typedef struct IterationHistory
+{
+	Matrix* xhist;
+	double* rhist;
+	double* diffhist;
+	int iterations_executed;
+} IterationHistory;
+
+IterationHistory* ih_create(int maxit);
+void ih_free(IterationHistory* ih);
+
+#define JACOBI 0
+#define GAUSS_SEIDEL 1
+#define SOR 2
+#define MAX_VALID_METHOD 2
+
+IterationHistory* stationary_solver(Matrix* m, double tolerance, int maxit, int method, double omega);
+
 // creates a matrix from a string
 // format (first number is row, second number is column): 11, 12, 13; 21, 22, 23; 31, 32, 33
 Matrix* matrix_create(char* s);
 Matrix* matrix_duplicate(Matrix* m);
 void matrix_free(Matrix* m);
+void matrix_copy(Matrix* copy_to, Matrix* copy_from);
 
 // modifies add_to and sub_from
 void matrix_add_matrix(Matrix* add_to, Matrix* add_from);
@@ -78,6 +97,7 @@ Matrix* matrix_unaugment(Matrix* m, int cutoff_column);
 
 // sums sqaure of every value in m, then returns the square root of that sum
 double matrix_get_magnitude(Matrix* m);
+double matrix_infinity_norm(Matrix* m);
 
 void matrix_print(Matrix* m, FILE* f);
 
