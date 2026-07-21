@@ -52,6 +52,7 @@ Matrix* matrix_mult_matrix_decent(Matrix* left, Matrix* right);
 void matrix_add_constant(Matrix* m, double d);
 void matrix_sub_constant(Matrix* m, double d);
 void matrix_mult_constant(Matrix* m, double d);
+void matrix_divide_constant(Matrix* m, double d);
 
 void matrix_swap_row(Matrix* m, int row1, int row2);
 // swaps is an integer array of the out of order rows

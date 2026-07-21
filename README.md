@@ -1,15 +1,20 @@
 # Required
 - gcc compiler
 # Compile
-- `bash compile.sh`
-# Problems
+- `bash compile1.sh` - hw1
+- `bash compile2.sh` - hw2
+# Problems - hw1
 1. Doesn't have any associated code
 1. ./hw1 2 \<system to solve (A augmented with b)\> \<solution\>
 1. ./hw1 3 \<matrix to decompose\> -> if there is a NaN in the result its not decomposeable
 1. ./hw1 4 \<system to solve (A augmented with b)\> \<solution\>
 1. ./hw1 5 \<system to solve (A augmented with b)\>
 
-The exact commands for each problem, ready to run, are included in the document
+# Problems - hw2
+1. ./hw2 1 \<method (Jacobi, Gauss-Seidel or SOR)\> \<max number of iterations\> \<system to solve\> \<omega (only required for SOR method)\> | ./hw2 2 \<system to solve\> (second command is for generating data for the plot)
+3. ./hw2 3 \<matrix to find dominant eigenvalue for\> \<inital vector (optional)\>
+
+display1.py and display2.py were used to generate the plots for the first and third problems
 
 # Notes
 - include/matrix.h contains comments for what the different matrix functions do

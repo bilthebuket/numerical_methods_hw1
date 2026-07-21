@@ -704,6 +704,19 @@ void matrix_mult_constant(Matrix* m, double d)
 	}
 }
 
+void matrix_divide_constant(Matrix* m, double d)
+{
+	if (m == NULL)
+	{
+		return;
+	}
+
+	for (int i = 0; i < m->rows * m->cols; i++)
+	{
+		m->vals[i] /= d;
+	}
+}
+
 void matrix_swap_row(Matrix* m, int row1, int row2)
 {
 	if (m == NULL || row1 < 0 || row2 < 0 || row1 >= m->rows || row2 >= m->rows || row1 == row2)
@@ -1324,7 +1337,7 @@ double matrix_infinity_norm(Matrix* m)
 	return r;
 }
 
-#define EQUALITY_THRESHOLD .01
+#define EQUALITY_THRESHOLD .000001
 
 bool matrix_equals(Matrix* m1, Matrix* m2)
 {
