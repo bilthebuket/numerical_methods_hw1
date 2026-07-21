@@ -21,4 +21,5 @@ display1.py and display2.py were used to generate the plots for the first and th
 - src/hw1.c contains the implementations of each problem
 - There are not a lot of comments in src/hw1.c because the function and variable names are as explicit as they sound, and the code "chunked" according to sections of logic (one chunk might be parsing the input, then the next is reducing the matrices, then the final chunk prints the result)
 - Input format: "r1c1, r1c2, r1c3; r2c1, r2c2, r2c3; r3c1, r3c2, r3c3"
+- When I say \<system to solve\>, I mean the matrix A augmented with the matrix b. So if the system is x<sub>1</sub> + x<sub>2</sub> = 2 and 2x<sub>1</sub> - 3x<sub>2</sub> = 5 then the proper input would be "1,1,2;2,-3,5"
 - **All input matrices must be surrounded with parenthesis**
